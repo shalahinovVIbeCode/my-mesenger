@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 type Message = {
@@ -11,7 +11,7 @@ type Message = {
   me: boolean;
 };
 
-// Starter messages keep the room lively while the live messages stay frontend-only.
+// Frontend-only starter messages keep the room active without changing app behavior.
 const initialMessages: Message[] = [
   {
     id: 1,
@@ -57,9 +57,20 @@ const initialMessages: Message[] = [
   },
 ];
 
+const chats = [
+  { name: "GhostChat", preview: "anonymous chat", active: true, unread: 3 },
+  { name: "Night Signal", preview: "low-noise room", active: false, unread: 0 },
+  { name: "Encrypted Cafe", preview: "members online", active: false, unread: 8 },
+];
+
 export default function GhostChatPage() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [draft, setDraft] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -83,118 +94,195 @@ export default function GhostChatPage() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-black text-zinc-100">
-      {/* Decorative cyberpunk background glows create depth without extra assets. */}
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute left-[-10%] top-[-20%] h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
-        <div className="absolute bottom-[-10%] right-[-8%] h-80 w-80 rounded-full bg-fuchsia-500/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:52px_52px] [mask-image:radial-gradient(circle_at_center,black,transparent_75%)]" />
+    <main className="relative h-dvh overflow-hidden bg-[#0a1018] text-slate-100 antialiased">
+      {/* Premium Telegram-like ambience: soft gradients, subtle grid, and frosted depth. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(47,137,255,0.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(52,211,153,0.13),transparent_26%),linear-gradient(135deg,#07111f_0%,#111827_44%,#060a12_100%)]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.8)_1px,transparent_1px)] [background-size:44px_44px]" />
+        <div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
 
-      <section className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <div className="grid flex-1 gap-4 lg:grid-cols-[280px_1fr]">
-          {/* Sidebar mirrors a Discord-style channel list while staying minimal. */}
-          <aside className="hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-5 shadow-glow backdrop-blur-xl lg:block">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-400 text-lg font-black text-black shadow-lg shadow-cyan-400/20">
-                G
+      <section className="relative mx-auto flex h-full w-full max-w-7xl flex-col p-0 md:p-4 lg:p-6">
+        <div className="grid h-full min-h-0 overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop-blur-2xl md:rounded-[1.75rem] lg:grid-cols-[340px_minmax(0,1fr)]">
+          <aside className="hidden min-h-0 border-r border-white/10 bg-slate-950/65 lg:flex lg:flex-col">
+            <div className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/75 p-5 backdrop-blur-2xl">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-lg font-black text-white shadow-lg shadow-sky-500/25">
+                    G
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight text-white">GhostChat</h1>
+                    <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-300/80">
+                      telegram web
+                    </p>
+                  </div>
+                </div>
+                <button
+                  aria-label="Open menu"
+                  className="rounded-full border border-white/10 bg-white/5 p-3 text-slate-300 transition hover:border-sky-400/40 hover:bg-sky-400/10 hover:text-white"
+                >
+                  <span className="block h-1 w-1 rounded-full bg-current shadow-[0_6px_0_currentColor,0_12px_0_currentColor]" />
+                </button>
               </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight">GhostChat</h1>
-                <p className="text-xs uppercase tracking-[0.28em] text-cyan-300/80">anonymous</p>
-              </div>
+
+              <label className="mt-5 flex items-center gap-3 rounded-full border border-white/10 bg-slate-900/85 px-4 py-3 text-sm text-slate-400 shadow-inner shadow-black/20 transition focus-within:border-sky-400/50 focus-within:bg-slate-900 focus-within:text-slate-200">
+                <span>⌕</span>
+                <input
+                  aria-label="Search chats"
+                  placeholder="Search anonymous chats"
+                  className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-500"
+                />
+              </label>
             </div>
 
-            <nav className="space-y-2 text-sm text-zinc-400">
-              {["# ghost-lobby", "# night-signal", "# encrypted-cafe"].map((channel, index) => (
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+              {chats.map((chat) => (
                 <button
-                  key={channel}
-                  className={`w-full rounded-2xl px-4 py-3 text-left transition hover:bg-zinc-900 hover:text-zinc-100 ${
-                    index === 0 ? "bg-zinc-900 text-cyan-200 ring-1 ring-cyan-400/20" : ""
+                  key={chat.name}
+                  className={`group flex w-full items-center gap-3 rounded-2xl p-3 text-left transition duration-200 ${
+                    chat.active
+                      ? "bg-sky-500/15 text-white ring-1 ring-sky-400/25"
+                      : "text-slate-300 hover:bg-white/[0.06]"
                   }`}
                 >
-                  {channel}
+                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-lg font-bold ring-1 ring-white/10 group-hover:ring-sky-400/25">
+                    {chat.name.slice(0, 1)}
+                    <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.85)]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate font-semibold">{chat.name}</p>
+                      <span className="text-xs text-slate-500">now</span>
+                    </div>
+                    <p className="truncate text-sm text-slate-400">{chat.preview}</p>
+                  </div>
+                  {chat.unread > 0 && (
+                    <span className="rounded-full bg-sky-500 px-2 py-0.5 text-xs font-bold text-white shadow-lg shadow-sky-500/25">
+                      {chat.unread}
+                    </span>
+                  )}
                 </button>
               ))}
-            </nav>
-
-            <div className="mt-8 rounded-2xl border border-zinc-800 bg-black/40 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">status</p>
-              <div className="mt-3 flex items-center gap-2 text-sm text-zinc-200">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.9)]" />
-                24 ghosts online
-              </div>
             </div>
           </aside>
 
-          <div className="flex min-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-3xl border border-zinc-800/90 bg-zinc-950/80 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl sm:min-h-[calc(100vh-3rem)]">
-            {/* Chat header with title, description, and online indicator. */}
-            <header className="flex flex-col gap-4 border-b border-zinc-800/80 bg-black/35 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div className="flex items-center gap-3">
-                <div className="relative h-12 w-12 rounded-2xl bg-gradient-to-br from-zinc-800 to-black p-[1px]">
-                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-zinc-950 text-2xl">👻</div>
-                  <span className="absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full border-2 border-zinc-950 bg-emerald-400" />
+          <div className="flex min-h-0 flex-col bg-[linear-gradient(180deg,rgba(15,23,42,0.68),rgba(2,6,23,0.82)),radial-gradient(circle_at_50%_0%,rgba(14,165,233,0.12),transparent_35%)]">
+            <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-slate-950/65 px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-2xl sm:px-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 text-xl shadow-lg shadow-sky-500/20 ring-1 ring-white/20">
+                  👻
+                  <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]" />
                 </div>
-                <div>
-                  <h2 className="text-lg font-semibold sm:text-xl"># ghost-lobby</h2>
-                  <p className="text-sm text-zinc-400">Anonymous public room • no accounts required</p>
+                <div className="min-w-0">
+                  <h2 className="truncate text-base font-bold tracking-tight text-white sm:text-lg">GhostChat</h2>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span>anonymous chat • online</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
-                Online now
+              <div className="flex items-center gap-2">
+                <div className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 sm:flex">
+                  24 online
+                </div>
+                <button
+                  aria-label="Chat options"
+                  className="rounded-full border border-white/10 bg-white/5 p-3 text-slate-300 transition hover:border-sky-400/40 hover:bg-sky-400/10 hover:text-white active:scale-95"
+                >
+                  <span className="block h-1 w-1 rounded-full bg-current shadow-[0_6px_0_currentColor,0_12px_0_currentColor]" />
+                </button>
               </div>
             </header>
 
-            {/* Scrollable messages area. It grows to fill the remaining screen height. */}
-            <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto scroll-smooth px-3 py-5 sm:px-6 lg:px-8">
+              <div className="mx-auto mb-4 w-fit rounded-full border border-white/10 bg-slate-950/55 px-4 py-2 text-center text-xs font-medium text-slate-400 shadow-lg shadow-black/15 backdrop-blur-xl">
+                Today • messages are frontend-only
+              </div>
+
               {messages.map((message) => (
                 <article
                   key={message.id}
-                  className={`group flex gap-3 ${message.me ? "justify-end" : "justify-start"}`}
+                  className={`group flex animate-message-in gap-2 ${message.me ? "justify-end" : "justify-start"}`}
                 >
                   {!message.me && (
-                    <div className="mt-1 hidden h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-sm ring-1 ring-zinc-800 sm:flex">
+                    <div className="mt-5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-200 ring-1 ring-white/10 sm:flex">
                       {message.user.slice(0, 1)}
                     </div>
                   )}
 
-                  <div className={`max-w-[86%] sm:max-w-[70%] ${message.me ? "items-end" : "items-start"}`}>
-                    <div className={`mb-1 flex items-center gap-2 text-xs text-zinc-500 ${message.me ? "justify-end" : ""}`}>
+                  <div className={`max-w-[86%] sm:max-w-[72%] lg:max-w-[62%] ${message.me ? "text-right" : "text-left"}`}>
+                    <div className={`mb-1 flex items-center gap-2 px-2 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500 ${message.me ? "justify-end" : "justify-start"}`}>
                       <span>{message.user}</span>
-                      <span>•</span>
-                      <time>{message.time}</time>
                     </div>
-                    <p
-                      className={`rounded-3xl px-4 py-3 text-sm leading-6 shadow-lg transition duration-200 group-hover:-translate-y-0.5 sm:text-base ${
+                    <div
+                      className={`relative rounded-[1.35rem] px-4 py-3 text-sm leading-6 shadow-xl transition duration-300 group-hover:-translate-y-0.5 sm:text-[15px] ${
                         message.me
-                          ? "rounded-br-md bg-cyan-400 text-black shadow-cyan-500/10"
-                          : "rounded-bl-md border border-zinc-800 bg-zinc-900/90 text-zinc-100 shadow-black/20"
+                          ? "rounded-br-md bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sky-950/35"
+                          : "rounded-bl-md border border-white/10 bg-slate-800/90 text-slate-100 shadow-black/25 backdrop-blur"
                       }`}
                     >
-                      {message.text}
-                    </p>
+                      <p>{message.text}</p>
+                      <time className={`mt-1 block text-[11px] ${message.me ? "text-sky-100/75" : "text-slate-500"}`}>
+                        {message.time}
+                      </time>
+                    </div>
                   </div>
                 </article>
               ))}
+
+              <div className="flex animate-message-in items-end gap-2 pt-2">
+                <div className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-200 ring-1 ring-white/10 sm:flex">
+                  N
+                </div>
+                <div className="rounded-[1.35rem] rounded-bl-md border border-white/10 bg-slate-800/85 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur">
+                  <p className="mb-1 px-0.5 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500">
+                    NullByte is typing
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 animate-typing-dot rounded-full bg-slate-400" />
+                    <span className="h-2 w-2 animate-typing-dot rounded-full bg-slate-400 [animation-delay:150ms]" />
+                    <span className="h-2 w-2 animate-typing-dot rounded-full bg-slate-400 [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </div>
+              <div ref={messagesEndRef} />
             </div>
 
-            {/* Message composer with an input field and send button. */}
-            <form onSubmit={handleSubmit} className="border-t border-zinc-800/80 bg-black/35 p-4 sm:p-5">
-              <div className="flex gap-3 rounded-3xl border border-zinc-800 bg-zinc-950 p-2 transition focus-within:border-cyan-400/70 focus-within:shadow-[0_0_30px_rgba(34,211,238,0.12)]">
+            <form
+              onSubmit={handleSubmit}
+              className="sticky bottom-0 z-20 border-t border-white/10 bg-slate-950/70 px-3 py-3 shadow-[0_-18px_55px_rgba(0,0,0,0.24)] backdrop-blur-2xl sm:px-5"
+            >
+              <div className="mx-auto flex max-w-4xl items-center gap-2 rounded-full border border-white/10 bg-slate-900/90 p-2 shadow-inner shadow-black/25 transition duration-300 focus-within:border-sky-400/60 focus-within:bg-slate-900 focus-within:shadow-[0_0_0_4px_rgba(14,165,233,0.10)]">
+                <button
+                  type="button"
+                  aria-label="Attach file"
+                  className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/5 hover:text-slate-100 sm:flex"
+                >
+                  +
+                </button>
                 <input
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  placeholder="Send an anonymous message..."
-                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 sm:text-base"
+                  placeholder="Message GhostChat"
+                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 sm:text-base"
                 />
                 <button
                   type="submit"
                   disabled={!draft.trim()}
-                  className="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-cyan-300 hover:shadow-lg hover:shadow-cyan-400/20 active:translate-y-0 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:px-6"
+                  aria-label="Send message"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg shadow-sky-500/25 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-400 hover:shadow-sky-400/30 active:translate-y-0 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none disabled:hover:translate-y-0"
                 >
-                  Send
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 12L3 5.5C2.8 4.82 3.48 4.23 4.12 4.51L21 12L4.12 19.49C3.48 19.77 2.8 19.18 3 18.5L5 12ZM5 12H12"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </div>
             </form>
