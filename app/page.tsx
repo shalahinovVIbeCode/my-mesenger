@@ -3,8 +3,16 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-// This fake message list keeps the demo frontend-only: no backend, database, or auth.
-const fakeMessages = [
+type Message = {
+  id: number;
+  user: string;
+  time: string;
+  text: string;
+  me: boolean;
+};
+
+// Starter messages keep the room lively while the live messages stay frontend-only.
+const initialMessages: Message[] = [
   {
     id: 1,
     user: "Phantom-17",
@@ -50,12 +58,27 @@ const fakeMessages = [
 ];
 
 export default function GhostChatPage() {
-  // The input state is only for the visual demo; messages are not persisted anywhere.
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [draft, setDraft] = useState("");
 
-  // Prevents the demo form from refreshing the page when the send button is clicked.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const text = draft.trim();
+
+    if (!text) {
+      return;
+    }
+
+    const newMessage: Message = {
+      id: Date.now(),
+      user: "You",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      text,
+      me: true,
+    };
+
+    setMessages((currentMessages) => [...currentMessages, newMessage]);
     setDraft("");
   };
 
@@ -126,7 +149,7 @@ export default function GhostChatPage() {
 
             {/* Scrollable messages area. It grows to fill the remaining screen height. */}
             <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
-              {fakeMessages.map((message) => (
+              {messages.map((message) => (
                 <article
                   key={message.id}
                   className={`group flex gap-3 ${message.me ? "justify-end" : "justify-start"}`}
@@ -168,7 +191,8 @@ export default function GhostChatPage() {
                 />
                 <button
                   type="submit"
-                  className="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-cyan-300 hover:shadow-lg hover:shadow-cyan-400/20 active:translate-y-0 sm:px-6"
+                  disabled={!draft.trim()}
+                  className="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-cyan-300 hover:shadow-lg hover:shadow-cyan-400/20 active:translate-y-0 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:px-6"
                 >
                   Send
                 </button>
